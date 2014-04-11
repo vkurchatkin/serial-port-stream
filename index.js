@@ -3,7 +3,7 @@
  * Imports
  */
 
-var stream = require('stream');
+var Duplex = require('stream').Duplex;
 var util = require('util');
 
 var SerialPort = require('serialport').SerialPort;
@@ -24,20 +24,44 @@ function SerialPortStream (path, options) {
   if (!(this instanceof SerialPortStream))
     return new SerialPortStream(path, options);
 
-  stream.Duplex.call(this, { allowHalfOpen : false });
+  Duplex.call(this, { allowHalfOpen : false });
+
+  if ('object' === typeof path && 
+      '[object String]' !== Object.prototype.toString.call(path)) {
+    options = path;
+    path = options.path;
+  }
+
+  if (!options.sp && !path)
+    throw new Error('No `path` or `sp`');
 
   options = options || {};
-  var opts = {};
 
-  OPTS.forEach(function (opt) {
-    if (options.hasOwnProperty(opt))
-      opts[opt] = options[opt];
-  });
+  this._sp = options.sp;
 
-  this._sp = new SerialPort(path, opts);
-  this._opened = false;
+  if (!this._sp) {
+
+    var opts = {};
+
+    OPTS.forEach(function (opt) {
+      if (options.hasOwnProperty(opt))
+        opts[opt] = options[opt];
+    });
+
+    this._sp = new SerialPort(path, opts);
+  }
+
+  this._opened = !! this._sp.fd;
   this._closed = false;
   this._destroyed = false;
+
+  var stream = this;
+
+  if (this._opened) {
+    process.nextTick(function () {
+      stream.emit('open');
+    });
+  }
 
   this._sp.on('open', onSPOpen.bind(this));
   this._sp.on('close', onSPClose.bind(this));
@@ -48,10 +72,11 @@ function SerialPortStream (path, options) {
 
   this._autoClose = options.hasOwnProperty('autoClose') ? options.autoClose : true;
 
-  if (this._autoClose) this.once('finish', this.destroy);
+  if (this._autoClose)
+    this.once('finish', this.destroy);
 }
 
-util.inherits(SerialPortStream, stream.Duplex);
+util.inherits(SerialPortStream, Duplex);
 
 function write (chunk, encoding, callback) {
   if (!this._opened) {
