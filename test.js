@@ -1,67 +1,72 @@
+/**
+ * Tools
+ */
+
 require('should');
 
-var SerialPortStream = require('./index.js');
-var EventEmitter = require('events').EventEmitter;
+/**
+ * Subject
+ */
+var SerialPortStream = require('./lib/stream.js');
 
 describe('SerialPortStream', function () {
   it('should emit `open`', function (done) {
-    var sp = new EventEmitter;
+    function Adapter () {
+      this.open = function (cb) {
+        setImmediate(cb);
+      };
+    }
 
-    sp.pause = function () {};
+    SerialPortStream.setAdapter(Adapter);
 
-    var sps = new SerialPortStream({ sp : sp });
+    var sps = new SerialPortStream('/some/path', {});
 
     sps.on('open', done);
-
-    setImmediate(function () {
-      sp.emit('open');
-    });
   });
 
   it('should queue writes before opened', function (done) {
-    var sp = new EventEmitter;
     var opened = false;
 
-    sp.pause = function () {};
-    sp.write = function (chunk, callback) {
-      opened.should.be.true;
-      done();
-    };
+    function Adapter () {
+      this.open = function (cb) {
+        setImmediate(function () {
+          opened = true;
+          cb();
+        });
+      };
 
-    var sps = new SerialPortStream({ sp : sp });
+      this.write = function (chunk, callback) {
+        opened.should.be.true;
+        done();
+      };
+    }
+
+    SerialPortStream.setAdapter(Adapter);
+
+    var sps = new SerialPortStream('/some/path', {});
 
     sps.write('dasdas\n');
-
-    setImmediate(function () {
-      opened = true;
-      sp.emit('open');
-    });
   });
 
   it('should auto close when ended', function (done) {
-    var sp = new EventEmitter;
+    function Adapter () {
+      this.open = 
+      this.close = function (cb) {
+        setImmediate(cb);
+      };
 
-    sp.pause = function () {};
-    sp.write = function (chunk, callback) {
-      callback();
-    };
+      this.write = function (data, cb) {
+        setImmediate(cb);
+      };
+    }
 
-    sp.close = function () {
-      setImmediate(function () {
-        sp.emit('close');
-      })
-    };
+    SerialPortStream.setAdapter(Adapter);
 
-    sp.drain = function (callback) {
-      setImmediate(callback);
-    };
+    var sps = new SerialPortStream('/some/path', {});
 
-    var sps = new SerialPortStream({ sp : sp });
+    sps.on('close', done);
 
     sps.write('dasdas\n');
     sps.end('dasdas\n');
-
-    sp.on('close', done);
-    sp.emit('open');
   });
 });
