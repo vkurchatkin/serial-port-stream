@@ -12,5 +12,12 @@
     "serialport": "^1.3.1",
     "should": "^3.3.0",
     "mocha": "^1.18.2"
+  },
+  "browser": "./browser.js",
+  "devDependencies": {
+    "browserify": "^3.44.2"
+  },
+  "scripts": {
+    "browserify-test": "browserify test_chrome/index.js > test_chrome/background.js"
   }
 }
