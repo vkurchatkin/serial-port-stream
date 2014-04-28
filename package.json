@@ -1,7 +1,8 @@
 {
   "name": "serial-port-stream",
   "version": "0.1.0",
-  "description": "SerialPort stream wrapper",
+  "description": "Serial port as a duplex stream",
+  "keywords": ["serial", "port", "duplex", "stream", "browser", "chrome", "browserify"],
   "main": "index.js",
   "author": "Vladimir Kurchatkin <vladimir.kurchatkin@gmail.com>",
   "license": "MIT",
@@ -16,5 +17,9 @@
   "browser": "./browser.js",
   "devDependencies": {
     "browserify": "^3.44.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vkurchatkin/serial-port-stream.git"
   }
 }
