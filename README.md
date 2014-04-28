@@ -1,12 +1,16 @@
 # serial-port-stream
 
-Duplex stream wrapper around [node-serialport](https://github.com/voodootikigod/node-serialport)
+Serial port as a duplex stream.
+
+Works in node via [node-serialport](https://github.com/voodootikigod/node-serialport)
+and in chrome with [browserify](https://github.com/substack/node-browserify) via [chrome.serial](https://developer.chrome.com/apps/serial)
 
 # Features:
 
  - auto open;
  - auto close;
- - real `Duplex` stream :-).
+ - real `Duplex` stream;
+ - work with browserify in chrome extensions and apps.
 
 # Install
 
@@ -23,19 +27,15 @@ var SerialPortStream = require('serial-port-stream');
 # Usage:
 
  - `new SerialPortStream(path, options)` or
- - `SerialPortStream(path, options)` or
- - `new SerialPortStream(options)` or
- - `SerialPortStream(options)`;
+ - `SerialPortStream(path, options)`;
 
 ## Options:
 
- - `path` — is used when only options are passed;
- - `sp` — external instance of `SerialPort`, if is present,
-    then `path` and other serial port related options are
-    not used;
  - `autoClose` — auto close on `finish`, `true` by default;
- - `baudrate`, `dataBits`, `stopBits`, `parity`, `rtscts`,
-   `xon`, `xoff`, `xany`, `flowControl` — proxied to `SerialPort`.
+ - `baudRate`;
+ - `dataBits`;
+ - `stopBits`;
+ - `parity`.
 
 ## Methods:
 
@@ -54,7 +54,7 @@ Just like `fs` streams.
 
 ```javascript
 var SerialPortStream = require('serial-port-stream');
-var stream = new SerialPortStream('/dev/ttyUSB0', { baudrate : 9600 });
+var stream = new SerialPortStream('/dev/ttyUSB0', { baudRate : 9600 });
 
 stream.end('Hello world!\n');
 ```
